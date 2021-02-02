@@ -1,13 +1,15 @@
-# Cripto - Coins 
+# Api de Noticias sobre COVID
 
-Es una api que permite crear y registrar un usuario. Listar Monedas y ademas agregar a favoritos, actualizar sus valores y eliminar.
+Es una api que permite crear y registrar un usuario. Ver noticias sobre covid, también es posible utilizar filtros para reallizar diferentes tipos de busquedas.
+Un administrador activa las cuentas.
+Posee dos servicios uno cada 8 minutos, trae las noticias de la api y las guarda en la base de datos si no existen. Y otro que limpieza la base de datos borrando las noticias que sea hayan publicado hace mas de 5 días.
 
 ## Clonar el repo :floppy_disk:
 
 Clonar el repositorio en la ubicación que elijas.
 
 ```bash
-git clone https://github.com/mauricioarizaga/cripto-coins-api.git
+git clone https://github.com/mauricioarizaga/api-noticias-covid.git
 ```
 
 ## Instalación :computer:

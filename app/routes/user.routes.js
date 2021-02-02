@@ -21,9 +21,14 @@ app.get(
   );
 
   app.put(
-    "/admin/user",
+    "/admin/user/activate",
     [authJwt.validateUserAdmin],
     controller.authUserAdmin
   );
 
+  app.put(
+    "/admin/user/block",
+    [authJwt.validateUserAdmin],
+    controller.authUserAdmin
+  );
 };

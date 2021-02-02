@@ -5,52 +5,76 @@
 * lastName: Requerido del tipo string.
 * password: Requerido del tipo string. Además tiene que ser alfanúmerico con un mínimo de 8 caracteres. Se guarda encriptado en el campo.
 * email: Requerido del tipo email. Se valida que sea email(formato) y sea único.
-* preferedCurrency: Requerido del tipo integrer. Tiene como default value 1. 
 
-Ningún usuario es creado si alguno de estos datos, son nulos. 
+* Un administrador debe activar las cuentas o puede bloquear alguna cuenta de usuario
+
+El sistema tiene 3 roles(Admin, Inactivo, Users), aunque pueden crearse mas roles.
+
+Ningún usuario es creado si alguno de estos datos, son nulos.
+
+Se podrían incluir otros datos de ser necesarios para nuevas implementaciones.
 
 #### - Login de usuarios /auth/signin
 Recibimos username(email) y password.
 Verificamos que el usuario exista, y que el password sea de ese usuario. Si da errores devuelve mensajes de error.
 Al pasar la validación se genera el token y se envia un JSON con data del usuario necesarios para utilizar la api.
-* idUser
+* id
 * username
-* preferedCurrency
-* preferedCurrencyisoName
+* user_type
 * accessToken(El token tiene una validez de 1hr).
 
-Se podrían incluir otros datos de ser necesarios para nuevas implementaciones.
+## - Listados - Noticias
 
-## - Listados - Usuarios
+#### - Listado de noticias sobre Covid dada una fecha /news/bydate
+Recibimos la fecha para buscar noticias relacionadas para esa fecha.
+Si no contamos con noticias en nuestra DB local, buscamos en la API de noticias, insertamos las noticias en nuestra BD.
+Retornamos el listado de todas las noticias encontradas en esa fecha.
 
-#### - Listado coins por moneda preferida del usuario /list/coins
-Recibimos el valor de preferedCurrencyisoName del usuario
-Retornamos el listado de todas las monedas con su cotización en la moneda preferida del usuario.
+#### - Buscar noticias /news/search
+Recibimos los parametros de busqueda para las noticias.
+Esto nos permitira hacer busquedas, por titulo, descripcion, una fecha dada, y medios de comunicación. También permite ser ordenada por fecha asc y desc, además de paginar los resultados-
+Retornamos las noticias según parametros.
 
-#### - Agregar monedas a favoritos, cada usuario puede generar su listado /user/add/coins
-Recibimos los datos del id de usuario en la tabla users. Además de todos los datos de la moneda que luego vamos agregar en la tabla favuserscoins.
-Verificamos que no exista ya en la tabla, nos evita que un usuario agregue dos veces la misma moneda.
-Retornamos los valores que hemos agregado o si existe algún error lo retornamos sin agregar ningun dato.
+## - Administrador
 
-#### - Update valores de precio y última actualización /user/favupdate/coins
-En esta ruta vamos a actualizar los valores de mercado del listado de monedas favoritas vamos a requerir
+#### - Activar usuarios /admin/user/activate
+Recibimos el id del usuario a ser activado.
 - idUser En este parametro nos llega el id del usuario
-- id Este es el id de la moneda es único para cada moneda
-- preferedCurrencyisoName Este parametro es el isoName que nos permitira traer los valores actualizados, junto con el id del coin a actualizar
-Aca además del valor también actualizamos la fecha de última actualización para poder llevar un control visual del ultimo update de la moneda.
-Retornamos un mensaje si se ha hecho el update o un mensaje de error en caso de que no lo haya hecho.
+Verificamos mediante middleware que el usuario logueado sea Admin del sistema.
+Acá retornamos mensaje de Activado o de error según corresponda.
 
-#### - Borrar monedas de la lista de fav /user/favdelete/coins
-Requerimos para borrar la moneda del listado
+#### - Bloquear usuarios /admin/user/block
+Requerimos el id del usuario a ser bloqueado.
 - idUser En este parametro nos llega el id del usuario
-- id Este es el id de la moneda es único para cada moneda
-Acá retornamos mensajes de borrado o de error según corresponda.
+Verificamos mediante middleware que el usuario logueado sea Admin del sistema.
+Acá retornamos mensaje de Bloqueado o de error según corresponda.
 
-#### - Listado monedas favoritas /user/favlist/coins
-En esta ruta recibiremos estos datos
-- idUser En este parametro nos llega el id del usuario
-- number Es el número de items a mostrar. Acá el usuario puede definir, hasta un máximo de 25 monedas favoritas para mostrar. Si tuviera menos del número se muestra el total. Se realizan verificaciones por poder retornar valores acordes a las peticiones. 
-- orderName Es un string para definir el orden a mostrar del listado. Se puede ordenar ascendente o descendente. Por defecto se muestra el listado descendente. Esta ordenado por el valor de las monedas en la moneda preferida del usuario, pero tambien retorna el valor en las otras monedas disponibles.
+## - Middleware
+
+Se utilzan para verificar en el registro que no haya un usuario con el mismo email.
+Verificar que el usuario tenga un token valido para operar dentro de la aplicación.
+Validar que la cuenta este activada.
+Validar los usuarios que son Administradores de la aplicación.
+
+
+## - Servicios
+
+#### - Mantenimiento DB Actualizada
+Cada 8 minutos se corre un servicio que nos permite guardar las noticias de la API en nuestra DB local.
+Los campos son:
+id de la noticia.
+Nombre del provider.
+Scope del provider.
+Categoria
+titulo.
+descripcion.
+url de la noticia.
+url de la imagen de la noticia.
+fecha de publicación.
+
+#### - Limpieza DB
+Todos los días a las 01:00 AM(timezone Buenos Aires) se corre un servicio que nos permite limpiar las noticias que tengan mas de 5 dias.
+
 
 
 ### - Todas las siguientes rutas necesitan el token para poder acceder. De lo contrario les manda un mensaje de error. 

@@ -1,4 +1,3 @@
-const config = require("../config/auth.config");
 const db = require("../models");
 const UserRole = db.userRol;
 
@@ -9,7 +8,6 @@ exports.allAccess = (req, res) => {
 exports.userBoard = (req, res) => {
     res.status(200).send("Acceso solo para usuarios.");
   };
-  authUserAdmin
 
 exports.authUserAdmin = (req, res) => {
   const {userIdToken} =req;
@@ -24,10 +22,27 @@ if(userIdToken){
   }).catch(err =>{
     console.log(err)
   })
-  res.status(200).send("Acceso solo para usuarios.");
+  res.status(200).send("El usuario ha sido activado.");
 } else{
-  res.status(200).send("Acceso solo para usuarios.");
- 
+  res.status(200).send("Acceso solo para Admins.");
 }
+  };
 
-   };
+exports.blockUserAdmin = (req, res) => {
+    const {userIdToken} =req;
+    const {idUser} =req.body
+  if(userIdToken){
+    UserRole.update(
+      { roleId: 2 },
+      {
+      where: {
+        userId: idUser
+      }
+    }).catch(err =>{
+      console.log(err)
+    })
+    res.status(200).send("El usuario ha sido bloqueado.");
+  } else{
+    res.status(200).send("Acceso solo para Admins.");
+  }
+     };
