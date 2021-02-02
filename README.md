@@ -4,6 +4,10 @@ Es una api que permite crear y registrar un usuario. Ver noticias sobre covid, t
 Un administrador activa las cuentas.
 Posee dos servicios uno cada 8 minutos, trae las noticias de la api y las guarda en la base de datos si no existen. Y otro que limpieza la base de datos borrando las noticias que sea hayan publicado hace mas de 5 días.
 
+```bash
+La documentación de los endpoints esta en el archivo [Endpoints](endpoints.md)
+```
+
 ## Clonar el repo :floppy_disk:
 
 Clonar el repositorio en la ubicación que elijas.
@@ -33,7 +37,6 @@ npm start
 
 Por defecto, el Backend corre en http://localhost:3001
 <br><br>
-La documentación de los endpoints esta en el archivo [Endpoints](endpoints.md)
 
 # Hecho con mucho :heart:  
 
