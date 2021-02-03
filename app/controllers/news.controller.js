@@ -147,7 +147,7 @@ if(title || description){
   if(news.length !== 0){
  //Si hay noticias devuelvo las noticias ordenadas y paginadas. Si nos pide buscar por fecha guardamos para mostrar ambas busquedas
  if(dateNews){
-   newsByTandD=news;
+  newsByTandD=news;
   }else{
   res.send(news)
 }
@@ -222,7 +222,7 @@ News.findAll({
   }).then((news) =>{
    
   if(news.length !== 0){
-    console.log(news, "newsLocal")
+
     if(newsByTandD){
       newsByDate=news
  
@@ -266,13 +266,18 @@ if(newsApiDate.data.articles.length !== 0) {
 
 }
 
-
+const sentNews = ()=>{
+if(newsByDate.length!==0 &&newsByTandD.length!==0){
+  const newsConcat  = newsByDate.concat(newsByTandD)
+  const filterNewsUniquefilter=newsConcat.filter((el, index) => newsConcat.indexOf(el) === index)
+   res.send(filterNewsUniquefilter);
+   clearInterval(myNews);
+  }
+}
 //Enviar las noticias encontradas para un titulo y/o decscripcion y una fecha
+let myNews = setInterval(sentNews,1000);
 
 
-newsByDate.concat(newsByTandD)
- console.log(newsByDate, "aca")
-  res.send(newsByDate);
 
 //Buscar por provider 
 
