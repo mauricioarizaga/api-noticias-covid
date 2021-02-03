@@ -5,15 +5,6 @@ const db = require("../models");
 const News = db.news;
 const regExDate = /^(19|20|21)\d{2}\-(0\d{1}|1[0-2])\-([0-2]\d{1}|3[0-1])/;
 
-//Construccion Url Consulta API
-let urlApi = api.url+api.key+"&search=";
-    api.words.forEach((word,i) => {
-      if(i==0){
-        urlApi =urlApi + word
-      } else{
-        urlApi = urlApi +" "+word
-      }
-   })
 
 //Url Providers
 let urlApiProviders = api.urlProviders+api.key
@@ -116,9 +107,24 @@ const {userIdToken} =req;
 const {title, description, provider, dateNews } =req.body
 let {orderBy, pagination} =req.body
 
+if(!title && !description && !provider && !dateNews) {res.send("Todos los campos estan vacios. Por favor intentelo nuevamente")
+
+}else{
+//Construccion Url Consulta API
+let urlApi = api.url+api.key+"&search=";
+    api.words.forEach((word,i) => {
+      if(i==0){
+        urlApi =urlApi + word
+      } else{
+        urlApi = urlApi +" "+word
+      }
+   })
+
 //Seteo valores por defecto si vienen vacios
 if(!orderBy) orderBy = "DESC"
 if(!pagination) pagination = 5
+let newsByTandD = [];
+let newsByDate = [];
 if(userIdToken){
 
 //Noticias según título y descripcion
@@ -126,17 +132,25 @@ if(title || description){
   orderBy.toUpperCase()
    News.findAll({
     where:{
-      [Op.or]:{ title: {
+      [Op.or]:{
+      title: {
       [Op.substring]: title,
+    },
+    description: {
       [Op.substring]: description,
-    }}},
+    }
+  }},
     order: [ ['publishedAt', orderBy]],
     offset: pagination
-}).then(async news => {
+}).then( news => {
 
   if(news.length !== 0){
- //Si hay noticias devuelvo las noticias ordenadas y paginadas
-    res.send(news)
+ //Si hay noticias devuelvo las noticias ordenadas y paginadas. Si nos pide buscar por fecha guardamos para mostrar ambas busquedas
+ if(dateNews){
+   newsByTandD=news;
+  }else{
+  res.send(news)
+}
   
   }else{
   
@@ -146,7 +160,7 @@ if(title || description){
    if(!description) urlApi = urlApi+' "'+title+'"'+"&categories="
    if(description && title) urlApi = urlApi+' "'+title+'"'+' "'+description+'"'+"&categories="  
    
-   console.log(urlApi, "con titulo")
+
 
    api.categories.forEach((category, i)=>{
     if(i==0){
@@ -158,15 +172,17 @@ if(title || description){
   
 
 //Consulta a la Api
-await axios.get(urlApi).then( newsApi =>{
+ axios.get(urlApi).then( newsApi =>{
   
   if(newsApi.data.articles.length !== 0) { 
   
-    res.send(newsApi.data.articles)
-  
-  }else{
-  
-    res.json({mensaje: "No hay noticias para el título "+ title+ " y/o la descripción" + title})
+    if(dateNews){
+      newsByTandD=newsApi.data.articles
+    
+
+    }else{
+      res.send(newsApi.data.articles)
+    }
   
   }
 });
@@ -183,8 +199,17 @@ await axios.get(urlApi).then( newsApi =>{
 
 
 
-if(dateNews.length ==10 && dateNews.match(regExDate)) {
- 
+if(dateNews  && dateNews.match(regExDate)) {
+ //Construccion Url Consulta API
+
+ let urlApi = api.url+api.key+"&search=";
+    api.words.forEach((word,i) => {
+      if(i==0){
+        urlApi =urlApi + word
+      } else{
+        urlApi = urlApi +" "+word
+      }
+   })
 //Consulta a la base de datos local
 News.findAll({
       where:{
@@ -197,9 +222,13 @@ News.findAll({
   }).then((news) =>{
    
   if(news.length !== 0){
-  
-  res.send(news)
-
+    console.log(news, "newsLocal")
+    if(newsByTandD){
+      newsByDate=news
+ 
+    }else{
+      res.send(news)
+    }
 }else{
 
 //Consulta a la Api por noticias para la fecha dada
@@ -221,11 +250,11 @@ axios.get(urlApi).then(newsApiDate =>{
  
 if(newsApiDate.data.articles.length !== 0) { 
 
-  res.send(newsApiDate.data.articles)
-
-}else{
-
-  res.json({mensaje: "No hay noticias para la fecha "+ dateNews})
+  if(newsByTandD){
+    newsByDate=newsApiDate.data.articles
+  }else{
+    res.send(newsApiDate.data.articles)
+  }
 
 }
 })
@@ -237,6 +266,13 @@ if(newsApiDate.data.articles.length !== 0) {
 
 }
 
+
+//Enviar las noticias encontradas para un titulo y/o decscripcion y una fecha
+
+
+newsByDate.concat(newsByTandD)
+ console.log(newsByDate, "aca")
+  res.send(newsByDate);
 
 //Buscar por provider 
 
@@ -280,7 +316,7 @@ res.json({mensaje: "No hay noticias para los medios indicados."})
 }
 
 } else{
-
   res.json({mensaje: "Esta acción no esta permitida. "})
+}
 }
 }
