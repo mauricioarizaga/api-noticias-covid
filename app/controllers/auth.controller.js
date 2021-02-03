@@ -36,11 +36,11 @@ exports.signup = async (req, res) => {
 };
 
 //Login User
-exports.signin =  async (req, res) => {
+exports.signin =  (req, res) => {
   const { email , password} = req.body;
  
 //busca el usuario
-await Users.findOne({
+Users.findOne({
     where: {
       email: email
     }

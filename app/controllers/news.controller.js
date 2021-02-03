@@ -22,7 +22,7 @@ let urlApiProviders = api.urlProviders+api.key
 //Trae las noticias por una fecha dada
 
 
-exports.newsListbyDate = async (req, res) => {
+exports.newsListbyDate = (req, res) => {
 
 const {dateNews}=req.body
 const {userIdToken} =req;
@@ -70,10 +70,10 @@ urlApi = urlApi+"&startDate="+dateNews+"&endDate="+dateNews
 //Consulta a la Api
 const newsApiDate= await axios.get(urlApi);
  if(newsApiDate.data.articles) {
- newsApiDate.data.articles.forEach(async (article) => {
+ newsApiDate.data.articles.forEach((article) => {
 
 //Inserta las noticias
-   await News.create({
+    News.create({
     idArticle: article._id,
     providerName: article.provider.name ,
     providerScope:article.provider.scope,
@@ -109,14 +109,14 @@ if(newsApiDate.data.articles.length !== 0) {
 //Buscar Noticias
 
 
-exports.newsSearch= async (req, res) => {
+exports.newsSearch=  (req, res) => {
 const {userIdToken} =req;
 
 // Buscar por provider, título, descripcion, fecha
 const {title, description, provider, dateNews } =req.body
 let {orderBy, pagination} =req.body
 
-//Seteo valores por defecto
+//Seteo valores por defecto si vienen vacios
 if(!orderBy) orderBy = "DESC"
 if(!pagination) pagination = 5
 if(userIdToken){
@@ -124,7 +124,7 @@ if(userIdToken){
 //Noticias según título y descripcion
 if(title || description){
   orderBy.toUpperCase()
-  await News.findAll({
+   News.findAll({
     where:{
       [Op.or]:{ title: {
       [Op.substring]: title,
@@ -183,8 +183,8 @@ await axios.get(urlApi).then( newsApi =>{
 
 
 
-if(dateNews && dateNews.length ==10 && !dateNews.match(regExDate)) {
-
+if(dateNews.length ==10 && dateNews.match(regExDate)) {
+ 
 //Consulta a la base de datos local
 News.findAll({
       where:{
@@ -194,8 +194,8 @@ News.findAll({
     order: [ ['publishedAt', orderBy] ],
     offset: pagination,
 
-  }).then(async (news) =>{
-
+  }).then((news) =>{
+   
   if(news.length !== 0){
   
   res.send(news)
@@ -217,7 +217,7 @@ urlApi = urlApi+"&categories="
 urlApi = urlApi+"&startDate="+dateNews+"&endDate="+dateNews
 
 //Consulta API
-await axios.get(urlApi).then(newsApiDate =>{
+axios.get(urlApi).then(newsApiDate =>{
  
 if(newsApiDate.data.articles.length !== 0) { 
 
@@ -228,21 +228,24 @@ if(newsApiDate.data.articles.length !== 0) {
   res.json({mensaje: "No hay noticias para la fecha "+ dateNews})
 
 }
-}).catch((err) =>{
-  
-    res.send(err)
 })
 }
+}).catch((err) =>{
+  
+  res.send(err)
 })
 
 }
+
+
 //Buscar por provider 
+
 //urlProvider
 if(provider){
 let providers =api.url+api.key+"&providers=";
 let arrayProvidersFront = provider.split(",");
-await axios.get(urlApiProviders).then(async (apiProviders) =>{
-
+ axios.get(urlApiProviders).then((apiProviders) =>{
+  
   apiProviders.data.providers.forEach((apiProvider) =>{
   arrayProvidersFront.forEach((arrayProviderF,i) =>{
 if(apiProvider._id ==  arrayProviderF){
@@ -255,26 +258,29 @@ if(apiProvider._id ==  arrayProviderF){
 }
 })
 })
-await axios.get(providers).then(newsByProviders =>{
- console.log(newsByProviders.data.articles,"apiproviders")
+}).catch( err =>{
+  res.send(err)
+})
+
+ axios.get(providers).then(newsByProviders =>{
+
 
 if(newsByProviders.data.articles.length!==0){
 
+  res.send(newsByProviders.data.articles)
 }else{
 
 res.json({mensaje: "No hay noticias para los medios indicados."}) 
 
 }
 
-})
 }).catch(err =>{
-  console.log(err)
+  res.send(err)
 })
 }
 
 } else{
 
   res.json({mensaje: "Esta acción no esta permitida. "})
-
 }
 }
