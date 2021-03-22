@@ -37,14 +37,13 @@ require('./app/routes/news.routes.js')(app);
 
 db.sequelize.sync({force: false}).then(() => {
   console.log('/////////////////////////////////////////////////////////////////////')
-  console.log(`Escribir 100 veces. Cuando se llama a una función async , esta devuelve un elemento Promise . ... Una función async puede contener una expresión await , la cual pausa la ejecución de la función asíncrona y espera la resolución de la Promise pasada y, a continuación, reanuda la ejecución de la función async y devuelve el valor resuelto" en ${port}!!!`);
+  console.log(`Server :) en ${port}!!!`);
 });
 
 
 app.listen(port, () => {
   console.log('/////////////////////////////////////////////////////////////////////')
-  console.log(`Escribir 100 veces. Cuando se llama a una función async , esta devuelve un elemento Promise . ... Una función async puede contener una expresión await , la cual pausa la ejecución de la función asíncrona y espera la resolución de la Promise pasada y, a continuación, reanuda la ejecución de la función async y devuelve el valor resuelto" en ${port}!!!`);
-  
+  console.log(`Server :) en ${port}!!!`);
   
   //Tasks 
 
